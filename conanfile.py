@@ -3,7 +3,7 @@ from conans import ConanFile, CMake, tools
 
 class DuktapeConan(ConanFile):
     name = "Duktape"
-    version = "2.3.0"
+    version = "2.6.0"
     license = "MIT"
     author = "Sami Vaarala <sami.vaarala@iki.fi>"
     url = "https://duktape.org"
@@ -17,6 +17,8 @@ class DuktapeConan(ConanFile):
     def package(self):
         self.copy("*.h", dst="include", src="duktape-releases/src" )
         self.copy("*.c", dst="src", src="duktape-releases/src" )
+        self.copy("*.h", dst="include", src="duktape-releases/examples/debug-trans-socket/" )
+        self.copy("*.c", dst="src", src="duktape-releases/examples/debug-trans-socket/" )
         self.copy("*.json", dst="src", src="duktape-releases/src" )
 
     def package_id(self):
