@@ -1,22 +1,20 @@
-from conans import ConanFile, CMake, tools
+from conan import ConanFile
 from conan.tools.files import copy
-import os
-
+from os.path import join
 
 class DuktapeConan(ConanFile):
-    name = "Duktape"
+    name = "duktape"
     version = "2.7.0-1"
+
     license = "MIT"
     author = "Sami Vaarala <sami.vaarala@iki.fi>"
     url = "https://duktape.org"
     description = "Duktape is an embeddable Javascript engine, with a focus on portability and compact footprint."
     topics = ("javascript", "engine", "embeddable", "compact")
 
-    exports_sources = {"tools/*"}
-
     options = {
         "with_debugger": [False, True],
-        "fatal_handler": "ANY",
+        "fatal_handler": [None,"ANY"],
         "manual_gc": [False, True],
         "use_exception": [False, True],
 
@@ -33,10 +31,12 @@ class DuktapeConan(ConanFile):
         duktape_version = self.version.split('-')[0]
         self.run("git clone https://github.com/svaarala/duktape-releases.git")
         self.run("cd duktape-releases && git checkout v%s" % duktape_version)
-        copy(self, "tools/*", self.export_sources_folder, os.path.join(self.export_sources_folder, "duktape-releases/"))
+        copy(self, "tools/*", self.export_sources_folder, join(self.export_sources_folder, "duktape-releases/"))
+
+    def export_sources(self):
+        copy(self, "tools/*", self.recipe_folder, self.export_sources_folder)
 
     def package(self):
-
         configuration_string = ""
 
         if self.options.with_debugger:
@@ -59,28 +59,27 @@ class DuktapeConan(ConanFile):
             configuration_string = configuration_string + "-DDUK_USE_CPP_EXCEPTIONS "
 
         if configuration_string != "":
-            self.run("python3 duktape-releases/tools/configure.py --output-directory generated/ "
+            self.run("python3 -Xutf8 duktape-releases/tools/configure.py --output-directory generated/ "
                + " --source-directory duktape-releases/src-input --config-metadata duktape-releases/config "
                + configuration_string)
-            self.copy("*.h", dst="include", src="generated" )
-            self.copy("*.c", dst="src", src="generated" )
-            self.copy("*.json", dst="src", src="generated" )
+
+            copy(self, "*.h", join(self.source_folder, "generated"), join(self.package_folder, "include"))
+            copy(self, "*.c", join(self.source_folder, "generated"), join(self.package_folder, "src"))
+            copy(self, "*.json", join(self.source_folder, "generated"), join(self.package_folder, "src"))
+
         else:
-            self.copy("*.h", dst="include", src="duktape-releases/src" )
-            self.copy("*.c", dst="src", src="duktape-releases/src" )
-            self.copy("*.json", dst="src", src="duktape-releases/src" )
+            copy(self, "*.h", join(self.source_folder, "duktape-releases/src"), join(self.package_folder, "include"))
+            copy(self, "*.c", join(self.source_folder, "duktape-releases/src"), join(self.package_folder, "src"))
+            copy(self, "*.json", join(self.source_folder, "duktape-releases/src"), join(self.package_folder, "src"))
 
         if self.options.with_debugger:
-            self.copy("*.h", dst="include", src="duktape-releases/examples/debug-trans-socket/" )
-            self.copy("*.c", dst="src", src="duktape-releases/examples/debug-trans-socket/" )
+            copy(self, "*.h", join(self.source_folder, "duktape-releases/examples/debug-trans-socket/"), join(self.package_folder, "include"))
+            copy(self, "*.c", join(self.source_folder, "duktape-releases/examples/debug-trans-socket/"), join(self.package_folder, "src"))
+
 
     def package_id(self):
-        del self.info.settings.compiler
-        del self.info.options.os
-        del self.info.options.arch
-        del self.info.options.build_type
+        self.info.settings.clear()
 
     def package_info(self):
         self.cpp_info.includedirs = ['include']
         self.cpp_info.srcdirs = ['src']
-
