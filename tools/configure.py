@@ -530,7 +530,7 @@ def main():
     # Scan used stridx, bidx, config options, etc.
 
     res = exec_get_stdout([
-        sys.executable,
+        sys.executable, "-Xutf8",
         os.path.join(script_path, 'scan_used_stridx_bidx.py')
     ] + glob.glob(os.path.join(srcdir, '*.c')) \
       + glob.glob(os.path.join(srcdir, '*.h')) \
@@ -588,7 +588,7 @@ def main():
         return res
 
     cmd = [
-        sys.executable, os.path.join(script_path, 'genconfig.py'),
+        sys.executable, "-Xutf8", os.path.join(script_path, 'genconfig.py'),
         '--output', os.path.join(tempdir, 'duk_config.h.tmp'),
         '--output-active-options', os.path.join(tempdir, 'duk_config_active_options.json'),
         '--git-commit', git_commit, '--git-describe', git_describe, '--git-branch', git_branch,
@@ -636,7 +636,7 @@ def main():
     # this will probably change when functions are added/removed based on profile.
 
     cmd = [
-        sys.executable,
+        sys.executable, "-Xutf8",
         os.path.join(script_path, 'genbuiltins.py'),
     ]
     cmd += [
@@ -733,7 +733,7 @@ def main():
     logger.debug('Expand UnicodeData.txt ranges')
 
     exec_print_stdout([
-        sys.executable,
+        sys.executable, "-Xutf8",
         os.path.join(script_path, 'prepare_unicode_data.py'),
         '--unicode-data', unicode_data,
         '--output', os.path.join(tempdir, 'UnicodeData-expanded.tmp')
@@ -742,7 +742,7 @@ def main():
     def extract_chars(incl, excl, suffix):
         logger.debug('- extract_chars: %s %s %s' % (incl, excl, suffix))
         res = exec_get_stdout([
-            sys.executable,
+            sys.executable, "-Xutf8",
             os.path.join(script_path, 'extract_chars.py'),
             '--unicode-data', os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
             '--include-categories', incl,
@@ -757,7 +757,7 @@ def main():
     def extract_caseconv():
         logger.debug('- extract_caseconv case conversion')
         res = exec_get_stdout([
-            sys.executable,
+            sys.executable, "-Xutf8",
             os.path.join(script_path, 'extract_caseconv.py'),
             '--command=caseconv_bitpacked',
             '--unicode-data', os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
@@ -772,7 +772,7 @@ def main():
 
         logger.debug('- extract_caseconv canon lookup')
         res = exec_get_stdout([
-            sys.executable,
+            sys.executable, "-Xutf8",
             os.path.join(script_path, 'extract_caseconv.py'),
             '--command=re_canon_lookup',
             '--unicode-data', os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
@@ -786,7 +786,7 @@ def main():
 
         logger.debug('- extract_caseconv canon bitmap')
         res = exec_get_stdout([
-            sys.executable,
+            sys.executable, "-Xutf8",
             os.path.join(script_path, 'extract_caseconv.py'),
             '--command=re_canon_bitmap',
             '--unicode-data', os.path.join(tempdir, 'UnicodeData-expanded.tmp'),
@@ -944,7 +944,7 @@ def main():
             f.write(create_source_prologue(os.path.join(tempdir, 'LICENSE.txt.tmp'), os.path.join(tempdir, 'AUTHORS.rst.tmp')))
 
         cmd = [
-            sys.executable,
+            sys.executable, "-Xutf8",
             os.path.join(script_path, 'combine_src.py'),
             '--include-path', os.path.join(tempdir, 'src'),
             '--include-exclude', 'duk_config.h',  # don't inline
