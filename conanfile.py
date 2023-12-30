@@ -4,7 +4,7 @@ from os.path import join
 
 class DuktapeConan(ConanFile):
     name = "duktape"
-    version = "2.7.0-1"
+    version = "2.7.0-2"
 
     license = "MIT"
     author = "Sami Vaarala <sami.vaarala@iki.fi>"
@@ -32,9 +32,11 @@ class DuktapeConan(ConanFile):
         self.run("git clone https://github.com/svaarala/duktape-releases.git")
         self.run("cd duktape-releases && git checkout v%s" % duktape_version)
         copy(self, "tools/*", self.export_sources_folder, join(self.export_sources_folder, "duktape-releases/"))
+        copy(self, "custom_config/*", self.export_sources_folder, join(self.export_sources_folder, "duktape-releases/config/helper-snippets/"), keep_path=False)
 
     def export_sources(self):
         copy(self, "tools/*", self.recipe_folder, self.export_sources_folder)
+        copy(self, "custom_config/*", self.recipe_folder, self.export_sources_folder)
 
     def package(self):
         configuration_string = ""
@@ -58,19 +60,13 @@ class DuktapeConan(ConanFile):
         if self.options.use_exception:
             configuration_string = configuration_string + "-DDUK_USE_CPP_EXCEPTIONS "
 
-        if configuration_string != "":
-            self.run("python3 -Xutf8 duktape-releases/tools/configure.py --output-directory generated/ "
-               + " --source-directory duktape-releases/src-input --config-metadata duktape-releases/config "
-               + configuration_string)
+        self.run("python3 -Xutf8 duktape-releases/tools/configure.py --output-directory generated/ "
+            + " --source-directory duktape-releases/src-input --config-metadata duktape-releases/config "
+            + configuration_string)
 
-            copy(self, "*.h", join(self.source_folder, "generated"), join(self.package_folder, "include"))
-            copy(self, "*.c", join(self.source_folder, "generated"), join(self.package_folder, "src"))
-            copy(self, "*.json", join(self.source_folder, "generated"), join(self.package_folder, "src"))
-
-        else:
-            copy(self, "*.h", join(self.source_folder, "duktape-releases/src"), join(self.package_folder, "include"))
-            copy(self, "*.c", join(self.source_folder, "duktape-releases/src"), join(self.package_folder, "src"))
-            copy(self, "*.json", join(self.source_folder, "duktape-releases/src"), join(self.package_folder, "src"))
+        copy(self, "*.h", join(self.source_folder, "generated"), join(self.package_folder, "include"))
+        copy(self, "*.c", join(self.source_folder, "generated"), join(self.package_folder, "src"))
+        copy(self, "*.json", join(self.source_folder, "generated"), join(self.package_folder, "src"))
 
         if self.options.with_debugger:
             copy(self, "*.h", join(self.source_folder, "duktape-releases/examples/debug-trans-socket/"), join(self.package_folder, "include"))
